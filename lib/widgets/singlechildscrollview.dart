@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:nitesh/calculatorbarin.dart';
+import 'package:nitesh/models/database.dart';
 import 'package:nitesh/models/homeexpense.dart';
 import 'package:nitesh/widgets/listview.builder.dart';
 import 'package:provider/provider.dart';
@@ -36,11 +37,27 @@ class _HomeExpenseState extends State<HomeExpense> {
   );
   void _savedetail() {
     _formkey.currentState.save();
-    Provider.of<HomeVada>(context, listen: false).adddetail(_newdetail);
+    //Provider.of<HomeVada>(context, listen: false).adddetail(_newdetail);
+    Provider.of<HomeVada>(context, listen: false).getalldetails();
+
+    final db = DatabaseHelper.instance;
+    db.insert(_newdetail);
+  }
+
+  void insertdata() {}
+
+  void queryall() {
+    // final res = db.queryall();
+    // print(res.then((value) {
+    //   print(value);
+    // }));
+    final db = DatabaseHelper.instance;
+    db.deletedata();
   }
 
   @override
   Widget build(BuildContext context) {
+    queryall();
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: PreferredSize(
@@ -50,11 +67,17 @@ class _HomeExpenseState extends State<HomeExpense> {
             IconButton(
                 icon: Icon(Icons.save),
                 onPressed: () {
-                  _savedetail();
-                  Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => ListViewBuilderr()));
+                  // insertdata();
+                  final db = DatabaseHelper.instance;
+                  var res = db.queryall();
+                  res.then((value) {
+                    print(value);
+                  });
+                  // _savedetail();
+                  // Navigator.push(
+                  //     context,
+                  //     MaterialPageRoute(
+                  //         builder: (context) => ListViewBuilderr()));
                 })
           ],
           backgroundColor: Colors.amber,

@@ -1,19 +1,17 @@
-import 'dart:convert';
-
 import 'package:flutter/cupertino.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import '../models/database.dart';
 
 class Homeexp {
-  final String id;
-  final String name;
-  final String date;
-  final String roomnum;
-  final String electricityprevnum;
-  final String electricitynewnum;
-  final String previousroomamount;
-  final String newroomamount;
-  final String wifiamount;
-  final String waternum;
+  int id;
+  String name;
+  String date;
+  String roomnum;
+  String electricityprevnum;
+  String electricitynewnum;
+  String previousroomamount;
+  String newroomamount;
+  String wifiamount;
+  String waternum;
   Homeexp(
       {this.electricitynewnum,
       this.id,
@@ -24,7 +22,7 @@ class Homeexp {
       this.roomnum,
       this.waternum,
       this.wifiamount,
-      this.date});
+      this.date = "2055/06/11"});
 
   //converting object to map object
   Map<String, dynamic> toMap() {
@@ -36,12 +34,27 @@ class Homeexp {
     map['name'] = name;
     map['date'] = date;
     map['roomnum'] = roomnum;
-    map['electricityprevnum'] = electricityprevnum;
-    map['electricitynewnum'] = electricitynewnum;
-    map[' previousroomamount'] = previousroomamount;
-    map['newroomamount'] = newroomamount;
-    map['wifiamount'] = wifiamount;
-    map['waternum'] = waternum;
+    map['epunit'] = electricityprevnum;
+    map['ecunit'] = electricitynewnum;
+    map[' puranovada'] = previousroomamount;
+    map['newvada'] = newroomamount;
+    map['wifiprice'] = wifiamount;
+    map['wunit'] = waternum;
+    return map;
+  }
+
+  //function to extract a detail object from map object
+  Homeexp.extractfrommap(Map<String, dynamic> map) {
+    this.id = map['id'];
+    this.name = map['name'];
+    this.date = map['date'];
+    this.roomnum = map['roomnum'];
+    this.electricityprevnum = map['epunit'];
+    this.electricitynewnum = map['ecunit'];
+    this.previousroomamount = map['puranovada'];
+    this.newroomamount = map['newvada'];
+    this.wifiamount = map['wifiprice'];
+    this.waternum = map['wunit'];
   }
 }
 
@@ -54,7 +67,6 @@ class HomeVada with ChangeNotifier {
 
   Future adddetail(Homeexp homeexp) async {
     final newDetails = Homeexp(
-        id: DateTime.now().toString(),
         date: homeexp.date,
         electricitynewnum: homeexp.electricitynewnum,
         electricityprevnum: homeexp.electricityprevnum,
@@ -65,10 +77,21 @@ class HomeVada with ChangeNotifier {
         waternum: homeexp.waternum,
         wifiamount: homeexp.wifiamount);
 
-    final sp = await SharedPreferences.getInstance();
+    // _homeexpense.add(newDetails);
 
-    sp.setString("newd", newDetails.toString());
-    _homeexpense.add(sp.get("newd"));
+    notifyListeners();
+  }
+
+  Future<List<Homeexp>> getalldetails() async {
+    _homeexpense = List<
+        Homeexp>(); //clear the list before adding, else replicates will be there
+    final db = DatabaseHelper.instance;
+    final List<Map<String, dynamic>> allqueries = await db.queryall();
+    int count = allqueries.length;
+
+    for (int i = 0; i < count; i++) {
+      _homeexpense.add(Homeexp.extractfrommap(allqueries[i]));
+    }
 
     notifyListeners();
   }

@@ -1,23 +1,51 @@
 import 'package:flutter/material.dart';
-import 'package:nitesh/calculatorbarin.dart';
+import 'package:nitesh/models/database.dart';
+
 import 'package:provider/provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+
 import '../models/homeexpense.dart';
 
-class ListViewBuilderr extends StatelessWidget {
+class ListViewBuilderr extends StatefulWidget {
+  @override
+  _ListViewBuilderrState createState() => _ListViewBuilderrState();
+}
+
+class _ListViewBuilderrState extends State<ListViewBuilderr> {
+  List<Homeexp> homeexp = List();
+  Future<void> getalldetails() async {
+    homeexp = List<
+        Homeexp>(); //clear the list before adding, else replicates will be there
+    final db = DatabaseHelper.instance;
+    //final List<Map<String, dynamic>> allqueries = await db.queryall();
+    List<Map<String, dynamic>> allqueries = await db.queryall();
+
+    print(allqueries);
+    int count = allqueries.length;
+
+    for (int i = 0; i < count; i++) {
+      homeexp.add(Homeexp.extractfrommap(allqueries[i]));
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
-    final res = Provider.of<HomeVada>(context, listen: false).homeexpense;
-    print(" result is = $res");
+    getalldetails();
+    //final res = Provider.of<HomeVada>(context, listen: false).homeexpense;
+    //print(res[0].name);
 
     return Material(
       child: ListView.builder(
-          itemCount: res.length,
+          itemCount: homeexp.length,
           itemBuilder: (context, index) => ListTile(
-                title: Text(res[index].name),
-                subtitle: Text(res[index].roomnum),
-                leading: Text(res[index].electricitynewnum),
-                trailing: Text(res[index].electricityprevnum),
+                title: Text(homeexp[index].name),
+                subtitle: Text(homeexp[index].roomnum),
+                leading: Text(homeexp[index].electricitynewnum),
+                trailing: Text(homeexp[index].electricityprevnum),
               )),
     );
   }
